@@ -1,0 +1,10 @@
+{
+    "port":8080,
+    "services":[
+        {
+            "name":"demo1",
+            "type":"ImageServer",
+            "tileRootPath":"C:\\AppDatas\\arcgisserver\\directories\\arcgiscache\\elevation_ImageServer"
+        }
+    ]
+}

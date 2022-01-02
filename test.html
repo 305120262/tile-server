@@ -1,0 +1,123 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Intro to layers | Sample | ArcGIS API for JavaScript 4.22</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.22/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.22/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #layerToggle {
+        top: 20px;
+        right: 20px;
+        position: absolute;
+        z-index: 99;
+        background-color: white;
+        border-radius: 8px;
+        padding: 10px;
+        opacity: 0.75;
+      }
+    </style>
+
+    <script>
+      require(["esri/Map", "esri/views/SceneView", "esri/layers/TileLayer","esri/widgets/LayerList","esri/Basemap","esri/layers/ElevationLayer"], (Map, SceneView, TileLayer,LayerList,Basemap,ElevationLayer) => {
+
+        const testLayer = new TileLayer({
+          //url: "http://localhost:8080/rest/services/demo1/MapServer",
+		  //url:"https://workbook.sean.com:6443/arcgis/rest/services/gzmap/MapServer",
+		  url: "https://workbook.sean.com:6443/arcgis/rest/services/tilemap/MapServer",
+          // This property can be used to uniquely identify the layer
+          id: "demo",
+          visible: true
+        });
+		
+		const refLayer = new TileLayer({
+          //url: "http://localhost:8080/rest/services/demo1/MapServer",
+		  url:"https://workbook.sean.com:6443/arcgis/rest/services/gzmap/MapServer",
+		  //url: "https://workbook.sean.com:6443/arcgis/rest/services/tilemap/MapServer",
+          // This property can be used to uniquely identify the layer
+          id: "demo",
+          visible: true
+        });
+		
+		let elevLyr = new ElevationLayer({
+		  // Custom elevation service
+		  url: "http://localhost:8080/rest/services/demo1/ImageServer"
+		  //url:"https://workbook.sean.com:6443/arcgis/rest/services/elevation/ImageServer"
+		});
+		
+
+		let basemap = new Basemap({
+		  baseLayers: [
+			refLayer
+		  ],
+		  title: "mybasemap",
+		  id: "mybasemap"
+		});
+        /*****************************************************************
+         * Layers may be added to the map in the map's constructor
+         *****************************************************************/
+        const map = new Map({
+		  basemap:"satellite"
+          //layers: [testLayer],
+		  //ground:"world-elevation"
+        });
+		
+		// Add elevation layer to the map's ground.
+		map.ground.layers.add(elevLyr);
+
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map
+        });
+		
+		let layerList = new LayerList({
+		  view: view
+		});
+		// Adds widget below other elements in the top left corner of the view
+		//view.ui.add(layerList, {
+		  //position: "top-left"
+		//});
+
+        /*****************************************************************
+         * The map handles the layers' data while the view and layer views
+         * take care of renderering the layers
+         *****************************************************************/
+        view.on("layerview-create", (event) => {
+          console.log("LayerView for streets created!", event.layerView);
+        });
+
+        /*****************************************************************
+         * Layers are promises that resolve when loaded, or when all their
+         * properties may be accessed. Once the population layer has loaded,
+         * the view will animate to it's initial extent.
+         *****************************************************************/
+        view.when(() => {
+          refLayer.when(() => {
+            view.goTo(testLayer.fullExtent)
+            .catch((error) => {
+              console.error(error);
+            });
+          });
+        });
+
+        
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
